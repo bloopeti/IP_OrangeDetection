@@ -338,6 +338,7 @@ Mat anisotropicDiffusion(Mat src, int option, int iter, double lambda, double ka
 			iddSqr * cNE.mul(nablaNE) + iddSqr * cSE.mul(nablaSE) +
 			iddSqr * cNW.mul(nablaNW) + iddSqr * cSW.mul(nablaSW));
 	}
+	result.convertTo(result, CV_8UC1, 255.0);
 	return result;
 }
 
@@ -406,8 +407,12 @@ int numberOfBlobs(vector<KeyPoint> blobs)
 // convert BGR to LAB. increase luminosity. convert back to BGR
 Mat shadowReduction(Mat src)
 {
+	Mat srcclone = src.clone();
+	if (srcclone.type() == CV_32FC1)
+		srcclone.convertTo(srcclone, CV_8UC1, 255.0);
 	cv::Mat lab_image;
-	cv::cvtColor(src, lab_image, CV_BGR2Lab);
+	cv::cvtColor(srcclone, lab_image, CV_BGR2Lab);
+
 
 	// Extract the L channel
 	std::vector<cv::Mat> lab_planes(3);
@@ -983,27 +988,27 @@ Mat grayscaleFunctionOnColorImage(Mat src, int option)
 	}
 
 
-	imshow("resB", results[0]);
-	waitKey();
-	imshow("resG", results[1]);
-	waitKey();
-	imshow("resR", results[2]);
-	waitKey();
+	//imshow("resB", results[0]);
+	//waitKey();
+	//imshow("resG", results[1]);
+	//waitKey();
+	//imshow("resR", results[2]);
+	//waitKey();
 
 	Mat result(src.rows, src.cols, CV_8UC3);
-	merge(results, result);
-	//for (int i = 0; i < rows; i++)
-	//	for (int j = 0; j < cols; j++)
-	//	{
-	//		Vec3b pixel;
-	//		pixel[0] = results[0].at<uchar>(i, j);
-	//		pixel[1] = results[1].at<uchar>(i, j);
-	//		pixel[2] = results[2].at<uchar>(i, j);
-	//		result.at<Vec3b>(i, j) = pixel;
-	//	}
+	//merge(results, result);
+	////for (int i = 0; i < rows; i++)
+	////	for (int j = 0; j < cols; j++)
+	////	{
+	////		Vec3b pixel;
+	////		pixel[0] = results[0].at<uchar>(i, j);
+	////		pixel[1] = results[1].at<uchar>(i, j);
+	////		pixel[2] = results[2].at<uchar>(i, j);
+	////		result.at<Vec3b>(i, j) = pixel;
+	////	}
 
-	imshow("resCombined", result);
-	waitKey();
+	//imshow("resCombined", result);
+	//waitKey();
 	return result;
 }
 
@@ -1130,30 +1135,22 @@ void doIt()
 	Mat src = openImageColor();
 	Mat result = src.clone();
 	//result = grayscaleFunctionOnColorImage(result, 1);
-	//imshow("resPerona", result);
-	//waitKey();
-	result = shadowReduction(result);
-	//imshow("resShadowReduction", result);
-	//waitKey();
+	imshow("resPerona", result);
+	//result = shadowReduction(result);
+	imshow("resShadowReduction", result);
 	//result = convolution(result);
-	//imshow("resConvolution", result);
-	//waitKey();
+	imshow("resConvolution", result);
 	//result = RGBtoGrayscale(result);
 	//imshow("resGrayscale", result);
-	//waitKey();
 	//result = autoThreshold(result);
 	//imshow("resThreshold", result);
-	//waitKey();
 	result = fullKMeans(result, 4, 100);
 
-	imshow("resKmeans", result);
-	//waitKey();
-
-	int i = numberOfBlobs(blobDetect(src));
+	//imshow("resKmeans", result);
+	int i = numberOfBlobs(blobDetect(result));
 
 	imshow("src", src);
 	imshow("resFinal", result);
-
 	printf("blobs:%d", i);
 
 	waitKey();
