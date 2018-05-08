@@ -40,6 +40,7 @@ int nrOfChangedClusters(Mat Lold, Mat Lnew);
 Mat fullKMeans(Mat src, int k, int maxIterations);
 Mat colorByCluster(Mat L, vector<Vec3b> colorMeans, int k);
 Mat grayscaleFunctionOnColorImage(Mat src, int option);
+Mat selectSectionByThreshold(Mat src);
 
 //Mat erosion(Mat src);
 //Mat erode(Mat src);
@@ -446,7 +447,7 @@ Mat convolution(Mat src)
 	double delta = 0;
 	int ddepth = -1;
 	int kernel_size = 3; // 3x3 matrix
-	double k[3][3] = { {-1., -1., -1.},{-1., 8., -1.},{-1., -1., -1.} };
+	double k[3][3] = { {0.0625, 0.125, 0.0625}, {0.125, 0.25, 0.125}, {0.0625, 0.125, 0.0625} }; //{ {1., 2., 1.},{2., 4., 2.},{1., 2., 1.} }; // / 16 (div all by 16) // gauss
 	Mat kernel = Mat(kernel_size, kernel_size, CV_64F, k);// .inv();// / (float)(kernel_size*kernel_size); // 3x3 kernel 1 on middle col, 0 else
 
 	
@@ -995,8 +996,8 @@ Mat grayscaleFunctionOnColorImage(Mat src, int option)
 	//imshow("resR", results[2]);
 	//waitKey();
 
-	Mat result(src.rows, src.cols, CV_8UC3);
-	//merge(results, result);
+	Mat result = Mat::zeros(src.rows, src.cols, CV_8UC3);
+	merge(results, result);
 	////for (int i = 0; i < rows; i++)
 	////	for (int j = 0; j < cols; j++)
 	////	{
@@ -1130,23 +1131,49 @@ void l6KMeansClustering(Mat img)
 	waitKey(0);
 }
 
+Mat selectSectionByThreshold(Mat src)
+{
+	Mat temp = RGBtoGrayscale(src);
+	//imshow("resGrayscale", result);
+	temp = autoThreshold(temp);
+	//imshow("resThreshold", result);
+	int rows = src.rows;
+	int cols = src.cols;
+	Mat result = Mat::zeros(rows, cols, CV_8UC3);
+	for (int i = 0; i < rows; i++)
+		for (int j = 0; j < cols; j++)
+		{
+			uchar testPixel = temp.at<uchar>(i, j);
+			Vec3b black(0, 0, 0);
+			Vec3b srcPixel = src.at<Vec3b>(i, j);
+			if (testPixel == 255)
+				result.at<Vec3b>(i, j) = srcPixel;
+			else
+				result.at<Vec3b>(i, j) = black;
+		}
+	return result;
+}
+
 void doIt()
 {
 	Mat src = openImageColor();
 	Mat result = src.clone();
-	//result = grayscaleFunctionOnColorImage(result, 1);
+	
+	result = grayscaleFunctionOnColorImage(result, 1);
 	imshow("resPerona", result);
-	//result = shadowReduction(result);
+	
+	result = shadowReduction(result);
 	imshow("resShadowReduction", result);
-	//result = convolution(result);
+	
+	result = convolution(result);
 	imshow("resConvolution", result);
-	//result = RGBtoGrayscale(result);
-	//imshow("resGrayscale", result);
-	//result = autoThreshold(result);
-	//imshow("resThreshold", result);
-	result = fullKMeans(result, 4, 100);
+	
+	result = selectSectionByThreshold(result);
+	imshow("section selected", result);
 
-	//imshow("resKmeans", result);
+	result = fullKMeans(result, 4, 100);
+	imshow("resKmeans", result);
+
 	int i = numberOfBlobs(blobDetect(result));
 
 	imshow("src", src);
