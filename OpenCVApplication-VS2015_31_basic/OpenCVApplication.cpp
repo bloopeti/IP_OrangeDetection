@@ -709,10 +709,11 @@ vector<Vec3b> set4BaseColors() // orange, blue, brown, green
 	Vec3b ORANGE = { 0,140,255 }; // oranges
 	Vec3b SKYBLUE = { 235,206,135 }; // sky
 	Vec3b BROWN = { 19,69,139 }; // branches
+	Vec3b BLACK = { 0,0,0 }; // thresholded area
 	Vec3b GREEN = { 34,139,34 }; // leaves/grass
 	result.push_back(ORANGE);
 	result.push_back(SKYBLUE);
-	result.push_back(BROWN);
+	result.push_back(BLACK);
 	result.push_back(GREEN);
 	return result;
 }
