@@ -362,7 +362,7 @@ vector<KeyPoint> blobDetect(Mat src)
 
 	// Filter by Circularity
 	params.filterByCircularity = true;
-	params.minCircularity = 0.1;
+	params.minCircularity = 0.5;
 
 	// Filter by Convexity
 	params.filterByConvexity = true;
@@ -370,10 +370,10 @@ vector<KeyPoint> blobDetect(Mat src)
 
 	// Filter by Inertia
 	params.filterByInertia = true;
-	params.minInertiaRatio = 0.01;
+	params.minInertiaRatio = 0.25;
 
 	// Filter by Color
-	params.filterByColor = true;
+	params.filterByColor = 1;
 	params.blobColor = 255;
 
 
@@ -711,10 +711,12 @@ vector<Vec3b> set4BaseColors() // orange, blue, brown, green
 	Vec3b BROWN = { 19,69,139 }; // branches
 	Vec3b BLACK = { 0,0,0 }; // thresholded area
 	Vec3b GREEN = { 34,139,34 }; // leaves/grass
+	Vec3b YELLOW = { 70, 225, 255 }; // bright oranges
+	Vec3b LEAFGREEN = { 90, 180, 180 }; // bright leaves
+	result.push_back(YELLOW);
+	result.push_back(LEAFGREEN);
 	result.push_back(ORANGE);
-	result.push_back(SKYBLUE);
 	result.push_back(BLACK);
-	result.push_back(GREEN);
 	return result;
 }
 
@@ -1175,7 +1177,10 @@ void doIt()
 	result = fullKMeans(result, 4, 100);
 	imshow("resKmeans", result);
 
-	int i = numberOfBlobs(blobDetect(result));
+	std::vector<KeyPoint> keypoints = blobDetect(result);
+	drawKeypoints(result, keypoints, result, Scalar(255, 0, 0), DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	int i = numberOfBlobs(keypoints);
+	imshow("blobs", result);
 
 	imshow("src", src);
 	imshow("resFinal", result);
